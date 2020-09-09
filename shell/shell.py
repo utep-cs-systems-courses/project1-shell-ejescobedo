@@ -1,3 +1,5 @@
+import os
+
 while True:
         if 'PS1' in os.environ:
             os.write(1, (os.environ['PS1']).encode())
