@@ -1,0 +1,3 @@
+Child:  ...trying to exec /home/student/bin/wc
+Child:  ...trying to exec /usr/local/bin/wc
+Child:  ...trying to exec /usr/bin/wc
