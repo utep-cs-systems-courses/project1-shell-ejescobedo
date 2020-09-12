@@ -1,5 +1,0 @@
-Child:  ...trying to exec /home/student/bin/wc
-Child:  ...trying to exec /usr/local/bin/wc
-Child:  ...trying to exec /usr/bin/wc
- 3 10 41 test.txt
- 3 10 41 total
