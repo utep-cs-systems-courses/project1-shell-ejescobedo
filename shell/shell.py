@@ -1,5 +1,29 @@
 import os, sys, time, re
 
+def redirect(direction, userInput):
+        userInput = userInput.split(direction)
+        if direction == '>':
+                os.close(1)
+                sys.stdout = open(userInput[1].strip(), "w")
+                os.set_inheritable(1, True)
+        else:
+                os.close(0)
+                sys.stdin = open(userInput[1].strip(), 'r')
+                os.set_inheritable(0, True)
+        for dir in re.split(":", os.environ['PATH']): # try each directory in the path
+                program = "%s/%s" % (dir, args[0])
+                #os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
+                try:
+                                #Previous error given by sending whole userInput to look for it
+                                #which created addition of values from input text and output text
+                                #to be stored in the output text, by specifying only wc and input
+                                # file it fixed the problem
+                        os.execve(program, userInput[0].split(), os.environ) # try to exec program
+                except FileNotFoundError:             # ...expected
+                        pass                              # ...fail quietly
+
+        os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
+        sys.exit(1)                 # terminate with error
 while True:
         if 'PS1' in os.environ:
             os.write(1, (os.environ['PS1']).encode())
@@ -36,28 +60,20 @@ while True:
                 #os.write(2,("%s\n"%userInput).encode())
 
                 if '>' in userInput:
-                        #Ex wc test.txt > test2.txt
-                        #[wc test.txt],[test2.txt]
-                        userIn = userInput.split(">")
-                        os.close(1)                 # redirect child's stdout
-                        sys.stdout = open(userIn[1].strip(), "w")
-                        os.set_inheritable(1, True)
-                args2 = userInput.split(">")
-                
-                for dir in re.split(":", os.environ['PATH']): # try each directory in the path
-                        program = "%s/%s" % (dir, args[0])
-                        #os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
-                        try:
-                                #Previous error given by sending whole userInput to look for it
-                                #which created addition of values from input text and output text
-                                #to be stored in the output text, by specifying only wc and input
-                                # file it fixed the problem
-                                os.execve(program, args2[0].split(), os.environ) # try to exec program
-                        except FileNotFoundError:             # ...expected
-                                pass                              # ...fail quietly
+                        redirect('>', userInput)
+                elif '<' in userInput:
+                        redirect('<', userInput)
+                else:
+                        for dir in re.split(":", os.environ['PATH']): # try each directory in the path
+                                program = "%s/%s" % (dir, args[0])
+                                os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
+                                try:
+                                        os.execve(program, args, os.environ) # try to exec program
+                                except FileNotFoundError:             # ...expected
+                                        pass                              # ...fail quietly
 
-                os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
-                sys.exit(1)                 # terminate with error
+                        os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
+                        sys.exit(1)                 # terminate with error
 
         else:                           # parent (forked ok)
                 os.write(1, ("Parent: My pid=%d.  Child's pid=%d\n" %(pid, rc)).encode())
