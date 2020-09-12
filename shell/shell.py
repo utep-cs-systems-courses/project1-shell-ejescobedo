@@ -33,11 +33,26 @@ while True:
         elif rc == 0:                   # child
                 os.write(1, ("Child: My pid==%d.  Parent's pid=%d\n" %(os.getpid(), pid)).encode())
                 args = userInput.split()
+                #os.write(2,("%s\n"%userInput).encode())
+
+                if '>' in userInput:
+                        #Ex wc test.txt > test2.txt
+                        #[wc test.txt],[test2.txt]
+                        userIn = userInput.split(">")
+                        os.close(1)                 # redirect child's stdout
+                        sys.stdout = open(userIn[1].strip(), "w")
+                        os.set_inheritable(1, True)
+                args2 = userInput.split(">")
+                
                 for dir in re.split(":", os.environ['PATH']): # try each directory in the path
                         program = "%s/%s" % (dir, args[0])
-                        os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
+                        #os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
                         try:
-                                os.execve(program, args, os.environ) # try to exec program
+                                #Previous error given by sending whole userInput to look for it
+                                #which created addition of values from input text and output text
+                                #to be stored in the output text, by specifying only wc and input
+                                # file it fixed the problem
+                                os.execve(program, args2[0].split(), os.environ) # try to exec program
                         except FileNotFoundError:             # ...expected
                                 pass                              # ...fail quietly
 
