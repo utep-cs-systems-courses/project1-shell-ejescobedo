@@ -1,15 +1,6 @@
 import os, sys, time, re
 
-def redirect(direction, userInput):
-        userInput = userInput.split(direction)
-        if direction == '>':
-                os.close(1)
-                sys.stdout = open(userInput[1].strip(), "w")
-                os.set_inheritable(1, True)
-        else:
-                os.close(0)
-                sys.stdin = open(userInput[1].strip(), 'r')
-                os.set_inheritable(0, True)
+def path(args):
         for dir in re.split(":", os.environ['PATH']): # try each directory in the path
                 program = "%s/%s" % (dir, args[0])
                 #os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
@@ -18,12 +9,25 @@ def redirect(direction, userInput):
                                 #which created addition of values from input text and output text
                                 #to be stored in the output text, by specifying only wc and input
                                 # file it fixed the problem
-                        os.execve(program, userInput[0].split(), os.environ) # try to exec program
+                        os.execve(program, args, os.environ) # try to exec program
                 except FileNotFoundError:             # ...expected
                         pass                              # ...fail quietly
 
         os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
         sys.exit(1)                 # terminate with error
+
+def redirect(direction, userInput):
+        userInput = userInput.split(direction)
+        if direction == '>':
+                os.close(1)
+                sys.stdout = open(userInput[1].strip(), "w")
+                os.set_inheritable(1, True)
+                path(userInput[0].split())
+        else:
+                os.close(0)
+                sys.stdin = open(userInput[1].strip(), 'r')
+                os.set_inheritable(0, True)
+                path(userInput[0].split())
 while True:
         if 'PS1' in os.environ:
             os.write(1, (os.environ['PS1']).encode())
@@ -58,7 +62,7 @@ while True:
 
                 os.write(1, ("Child: My pid==%d.  Parent's pid=%d\n" %(os.getpid(), pid)).encode())
                 args = userInput.split()
-                #os.write(2,("%s\n"%userInput).encode())
+                
 
                 if "|" in userInput: # Piping command
                         pipe = userInput.split("|")
@@ -80,28 +84,14 @@ while True:
                         
                                 for fd in (pr, pw):
                                         os.close(fd)
-                                for dir in re.split(':', os.environ['PATH']): # try 
-                                        program = "%s/%s" % (dir, pipeCommand1[0])
-                                        try:
-                                                os.execve(program, pipeCommand1, os.environ) # try to exec program
-                                        except FileNotFoundError:                  # ...expected
-                                                pass                            # ...fail quietly
-                                os.write(2, ("Could not exec %s\n" % pipeCommand[0]).encode())
-                                sys.exit(1)    
+                                path(pipeCommand1)    
                         else: # parent (forked ok)
                                 os.close(0)
                                 os.dup(pr)
                                 os.set_inheritable(0, True)
                                 for fd in (pw, pr):
                                         os.close(fd)
-                                for dir in re.split(':', os.environ['PATH']): # try 
-                                        program = "%s/%s" % (dir, pipeCommand2[0].split())
-                                        try:
-                                                os.execve(program, pipeCommand2, os.environ) # try to exec program
-                                        except FileNotFoundError:                  # ...expected
-                                                pass                            # ...fail quietly
-                                os.write(2, ("Could not exec %s\n" % pipeCommand2[0].split()).encode())
-                                sys.exit(1)
+                                path(pipeCommand2)
         
                                 
                 if '>' in userInput:
@@ -109,16 +99,7 @@ while True:
                 elif '<' in userInput:
                         redirect('<', userInput)
                 else:
-                        for dir in re.split(":", os.environ['PATH']): # try each directory in the path
-                                program = "%s/%s" % (dir, args[0])
-                                os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
-                                try:
-                                        os.execve(program, args, os.environ) # try to exec program
-                                except FileNotFoundError:             # ...expected
-                                        pass                              # ...fail quietly
-
-                        os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
-                        sys.exit(1)                 # terminate with error
+                        path(args)
 
         else:                           # parent (forked ok)
                 os.write(1, ("Parent: My pid=%d.  Child's pid=%d\n" %(pid, rc)).encode())
