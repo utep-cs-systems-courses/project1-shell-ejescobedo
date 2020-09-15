@@ -99,10 +99,19 @@ while True:
                 elif '<' in userInput:
                         redirect('<', userInput)
                 else:
-                        path(args)
+                        if '/' in args[0]:
+                                program = args[0]
+                                try:
+                                        os.execve(program,args,os.environ)
+                                except FileNotFoundError:
+                                        pass
+                        else:
+                                path(args)
+
 
         else:                           # parent (forked ok)
-                os.write(1, ("Parent: My pid=%d.  Child's pid=%d\n" %(pid, rc)).encode())
-                childPidCode = os.wait()
-                os.write(1, ("Parent: Child %d terminated with exit code %d\n" %childPidCode).encode())
+                if not '&' in userInput:
+                        os.write(1, ("Parent: My pid=%d.  Child's pid=%d\n" %(pid, rc)).encode())
+                        childPidCode = os.wait()
+                        os.write(1, ("Parent: Child %d terminated with exit code %d\n" %childPidCode).encode())
                 
