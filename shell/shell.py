@@ -17,15 +17,15 @@ def path(args):
 
         
 def redirect(direction, userInput):
-        userInput = userInput.split(direction)    #
-        if direction == '>':
+        userInput = userInput.split(direction)    #Split user input by direction sign
+        if direction == '>':                      #If '>' redirect output into file
                 os.close(1)
-                sys.stdout = open(userInput[1].strip(), "w")
+                sys.stdout = open(userInput[1].strip(), "w")  #open and set to write
                 os.set_inheritable(1, True)
                 path(userInput[0].split())
         else:
-                os.close(0)
-                sys.stdin = open(userInput[1].strip(), 'r')
+                os.close(0)                       #Redirect input 
+                sys.stdin = open(userInput[1].strip(), 'r')   #open and set to read
                 os.set_inheritable(0, True)
                 path(userInput[0].split())
 while True:
