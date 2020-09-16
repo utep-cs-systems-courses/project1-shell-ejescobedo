@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+#In order for it to work
 import os, sys, time, re
 
 def path(args):
@@ -7,10 +8,6 @@ def path(args):
                 program = "%s/%s" % (dir, args[0])
                 #os.write(1, ("Child:  ...trying to exec %s\n" % program).encode())
                 try:
-                                #Previous error given by sending whole userInput to look for it
-                                #which created addition of values from input text and output text
-                                #to be stored in the output text, by specifying only wc and input
-                                # file it fixed the problem
                         os.execve(program, args, os.environ) # try to exec program
                 except FileNotFoundError:             # ...expected
                         pass                              # ...fail quietly
@@ -18,8 +15,9 @@ def path(args):
         #os.write(2, ("Child:    Could not exec %s\n" % args[0]).encode())
         sys.exit(1)                 # terminate with error
 
+        
 def redirect(direction, userInput):
-        userInput = userInput.split(direction)
+        userInput = userInput.split(direction)    #
         if direction == '>':
                 os.close(1)
                 sys.stdout = open(userInput[1].strip(), "w")
@@ -31,12 +29,12 @@ def redirect(direction, userInput):
                 os.set_inheritable(0, True)
                 path(userInput[0].split())
 while True:
-        if 'PS1' in os.environ:
+        if 'PS1' in os.environ:  #If PS1 defined, use it
             os.write(1, (os.environ['PS1']).encode())
         else:
-            os.write(1, ('$$ ').encode())
+            os.write(1, ('$$ ').encode())   #If not, go to default
         try:
-            userInput = input()
+            userInput = input()             #Get user input
         except EOFError:
             sys.exit(1)
 
@@ -67,7 +65,7 @@ while True:
                 
 
                 if "|" in userInput: # Piping command
-                        pipe = userInput.split("|")
+                        pipe = userInput.split("|")    
                         pipeCommand1= pipe[0].split()
                         pipeCommand2 = pipe[1].split()
 
@@ -96,23 +94,27 @@ while True:
                                 path(pipeCommand2)
         
                                 
-                if '>' in userInput:
+                if '>' in userInput:     #If > in input, send to
+                                         #redirect method for output redirection
                         redirect('>', userInput)
-                elif '<' in userInput:
+                elif '<' in userInput:   #Input redirection
                         redirect('<', userInput)
                 else:
-                        if '/' in args[0]:
+                        if '/' in args[0]:  #If '/' in user input, try the given path
                                 program = args[0]
                                 try:
                                         os.execve(program,args,os.environ)
-                                except FileNotFoundError:
+                                except FileNotFoundError:  #If not found, give error
                                         pass
                         else:
-                                path(args)
+                                path(args)                 #If no redirection/path/piping
+                                                           #send to find path
 
 
         else:                           # parent (forked ok)
-                if not '&' in userInput:
+                if not '&' in userInput:                  #If not '&', no background task, wait
+                                                          #for child
+                        
                         #os.write(1, ("Parent: My pid=%d.  Child's pid=%d\n" %(pid, rc)).encode())
                         childPidCode = os.wait()
                         #os.write(1, ("Parent: Child %d terminated with exit code %d\n" %childPidCode).encode())
