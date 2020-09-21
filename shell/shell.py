@@ -34,12 +34,19 @@ while True:
         else:
             os.write(1, ('$$ ').encode())   #If not, go to default
 
-        userInput = os.read(0,100).decode() #Wait for input and get rid of return character
+        try:
+                userInput = input()
+        except EOFError:
+                sys.exit(1)
+
+        #Tried to user read() but did not work
+        """
+        userInput = os.read(0,100).decode() # Read input
         if not userInput:
                 sys.exit(0)
-        elif userInput is '\n':                      # No input
-                pass
-
+        elif userInput is '\n':                      # End of line
+                pass                
+        """
         if userInput == "": # Empty input, will prompt again
             continue
         if 'exit' in userInput: # Terminates shell
