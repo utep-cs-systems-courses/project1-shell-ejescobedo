@@ -33,10 +33,12 @@ while True:
             os.write(1, (os.environ['PS1']).encode())
         else:
             os.write(1, ('$$ ').encode())   #If not, go to default
-        try:
-            userInput = input()             #Get user input
-        except EOFError:
-            sys.exit(1)
+
+        userInput = os.read(0,100).decode() #Wait for input and get rid of return character
+        if not userInput:
+                sys.exit(0)
+        elif userInput is '\n':                      # No input
+                pass
 
         if userInput == "": # Empty input, will prompt again
             continue
